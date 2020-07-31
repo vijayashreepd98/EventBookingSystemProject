@@ -2,6 +2,7 @@ const express = require('express');
 const session = require("express-session");
 const bodyParser = require('body-parser');
 const handlebars     = require('handlebars');
+const multer = require('multer');
 const app = express();
 adminRouter  = express.Router();
 userRouter  = express.Router();
