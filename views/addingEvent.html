@@ -34,6 +34,9 @@
           type:"POST",
           success:function(response){
             alert(response);
+            if(response === "EVENT ADDED SUCCESSFULLY!!!"){
+              window.location.href = "/adminHome";
+            }
             $("#ename").val(" ");
             $("#edetails").val(" ");
             $("#npeople").val(" ");
@@ -41,6 +44,7 @@
             $("#etime").val(" ");
             $("#cost").val(" ");
             $("#img").val(" ");
+
           }
       })
     }
