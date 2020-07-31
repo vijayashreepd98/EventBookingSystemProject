@@ -10,6 +10,8 @@ const path = require('path');
 const fs = require('fs');
 const hbs = require('hbs');
 const app = express();
+const xlsxFile = require('read-excel-file/node');
+
 
 const customerModel = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/registerModel.js');
 const eventList = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/eventModel.js');
@@ -34,15 +36,24 @@ hbs.registerHelper('json',function(context){
 
 /* ADMIN LOGIN PAGE VALIDATION */
 exports.login = function(req,res){
-    let name = req.body.username;
+  let name = req.body.username;
   let password = req.body.password;
-  /*VERIFYING CREDETIAL*/
-  if( name === 'admin' && password === 'admin') {
-    res.send("success");
-  
-  }else{
-    res.send("fail");
- }
+  let array = [ name,password];
+  /* VERIFYING CREDENTIAL*/
+  xlsxFile('./adminBook.xlsx').then((rows) =>{
+    let flag =0;
+    for(let i=0;i<rows.length;i++){
+      let j=0;
+      if(rows[i][j]== array[j]&& rows[i][j+1]==array[j+1]){
+        flag =  1;
+      }
+    }
+   if(flag  ==  1){
+      res.send("success");
+    } else {
+      res.send("fail");
+    }
+  });
 }
 
 
