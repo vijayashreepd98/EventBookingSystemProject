@@ -12,11 +12,11 @@ const hbs = require('hbs');
 const app = express();
 
 
-const customerModel = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/registerModel.js');
-const eventList = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/eventModel.js');
-const commentList = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/addComment.js');
-const eventStatus = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/likeModel.js');
-const bookedTickets = require('C:/Users/LOGAN/Desktop/nodecourse/eventBookingSystem/src/models/ticketModel.js');
+const customerModel = require('../../models/registerModel.js');
+const eventList = require('../../models/eventModel.js');
+const commentList = require('../../models/addComment.js');
+const eventStatus = require('../../models/likeModel.js');
+const bookedTickets = require('../../models/ticketModel.js');
 const { doesNotMatch } = require('assert');
 const { send } = require('process');
 
