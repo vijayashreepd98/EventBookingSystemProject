@@ -22,7 +22,12 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
+    <script>
+      Handlebars.registerHelper('dateTime1',function(datetime){
+        return moment(datetime).format('DD-MM-YYYY @  hh:mm');
+      });
 
+    </script>
   <style>
     .btn{
       position: absolute;
@@ -157,7 +162,7 @@
                     <div class='card-body text-center'>
                       <h2 class='card-title' name ="description">{{description}}</h2>
                       <p class='card-text'name="tickets" id="tickets">Available tickets: {{maxNoOfTicket}}</p>
-                      <p class="card-text" name="bookingEndTime">Booking Ends in :{{bookingEndTime}}</p>
+                      <p class="card-text" name="bookingEndTime">Booking Ends in :{{dateTime1 bookingEndTime}}</p>
                       <h2 class='card-text'>COST:{{cost}}</h2>
                       <p>NO of ticket:<input type="number" name="bookedTicket" class="bookedTicket" id="bookedTicket"placeholder="Enter no of ticket you want to book"/></p>
                       <button id="btn"class="card-text" style="color: blue;width:50px;height:30px;">BUY</button>
@@ -168,6 +173,7 @@
         </table>
       </div>
     </div>
+
   <script>
     $(document).ready(() => {
       $('#btn').click(()=>{

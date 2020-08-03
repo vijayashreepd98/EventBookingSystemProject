@@ -21,7 +21,12 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script>
+      Handlebars.registerHelper('dateTime',function(datetime){
+        return moment(datetime).format('d-mm-yyyy');
+      });
 
+    </script>
     <script>
     
       Handlebars.registerHelper("if_eq", function(value1,value2,option){
@@ -170,7 +175,7 @@
                   <div class='card-body text-center'>
                     <h2 class='card-title'>{{this.description}}</h2>
                     <p class='card-text'>Available tickets:{{this.maxNoOfTicket}}</p>
-                    <p class='card-text'>Booking starts from:{{this.bookingStartTime}},  </p><p class="card-text">to:{{this.bookingEndTime}}</p>
+                    <p class='card-text'>Booking starts from:{{dateTime this.bookingStartTime}},  </p><p class="card-text">to:{{dateTime this.bookingEndTime}}</p>
                     <h2 class='card-text'>COST:{{this.cost}}</h2>
                     <a href='/viewMore?image={{this.image}}&likes={{this.likes}}&username={{../username}}&eventId={{this._id}}&eventName={{this.eventName}}&description={{this.description}}&maxNoOfTicket={{this.maxNoOfTicket}}
                     &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success'>View More....</a>

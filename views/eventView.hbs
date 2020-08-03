@@ -29,6 +29,19 @@
  
     </script>
     <script>
+      Handlebars.registerHelper('dateTime',function(datetime){
+        return moment(datetime).format('D-MM-YYYY @  hh:mm');
+      });
+
+    </script>
+     <script>
+      Handlebars.registerHelper('datetimestring',function(datetime){
+        return moment(datetime).format('YYYY-MM-DThh:mm');
+      });
+
+    </script>
+
+    <script>
     function fun(attr){
       let res = confirm("Are you sure to delete event!!!...");
         if(res){
@@ -193,10 +206,10 @@
                   <div class='card-body text-center'>
                     <h2 class='card-title'>{{this.description}}</h2>
                     <p class='card-text'>Available tickets:{{this.maxNoOfTicket}}</p>
-                    <p class='card-text'>Booking starts from:{{this.bookingStartTime}},  </p><p class="card-text">to:{{this.bookingEndTime}}</p>
+                    <p class='card-text'>Booking starts from:{{dateTime this.bookingStartTime}},  </p><p class="card-text">to:{{dateTime this.bookingEndTime}}</p>
                     <h2 class='card-text'>COST:{{this.cost}}</h2>
                     <a href='/editEvent?image={{this.image}}&eventName={{this.eventName}}&description={{this.description}}&tickets={{this.maxNoOfTicket}}
-                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' id="btn"class="btn btn-primary">EDIT</a>
+                    &bookingStartTime={{datetimestring this.bookingStartTime}}&bookingEndTime={{datetimestring this.bookingEndTime}}&cost={{this.cost}}' id="btn"class="btn btn-primary">EDIT</a>
                     <a href='/eventStatus?image={{this.image}}&eventName={{this.eventName}}&description={{this.description}}&tickets={{this.maxNoOfTicket}}
                     &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success'>STATUS</a>
     
