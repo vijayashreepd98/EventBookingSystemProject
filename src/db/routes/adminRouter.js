@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const hbs = require('hbs');
 const app = express();
+const moment = require('moment');
 const xlsxFile = require('read-excel-file/node');
 
 
@@ -31,6 +32,15 @@ hbs.registerHelper('if_eq', function(a, b, opts) {
 });
 hbs.registerHelper('json',function(context){
   return JSON.stringify(context);
+});
+
+
+hbs.registerHelper('dateTime',function(datetime){
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm');
+});
+
+hbs.registerHelper('datetimestring',function(datetime){
+  return moment(new Date(datetime)).format('YYYY-MM-DDThh:mm');
 });
 
 
@@ -70,6 +80,7 @@ exports.adminHome = async function(req,res)  {
       image:1,
       _id: 1
       });
+      console.log(dateFormat(events[0].bookingStartTime,"d-mm-yyyy @ h:MM:ss"));
         if (events) {
           res.render('eventView.hbs',{
             events: events
@@ -90,7 +101,7 @@ exports.adminHome = async function(req,res)  {
     let cost = req.body.cost;
     let image = req.file.filename;
     /*CONVERTING DATE AND TIME TO SPECIFIED FORMAT*/
-    let sdate = dateFormat(bookingStartTime,"d-mm-yyyy  @ h:MM:ss");
+    let sdate = dateFormat(bookingStartTime,"d-mm-yyyy @ h:MM:ss");
     let edate = dateFormat(bookingEndTime,"d-mm-yyyy  @ h:MM:ss");
     /*CHECKING NEW EVENTS WITH EXISTING EVENT WITH EVENT NAME*/
     const events= await eventList.findOne({eventName:ename});
@@ -127,8 +138,8 @@ exports.adminHome = async function(req,res)  {
         eventName: ename,
         description: edetails,
         maxNoOfTicket: npeople,
-        bookingStartTime: sdate,
-        bookingEndTime: edate,
+        bookingStartTime: new Date(bookingStartTime),
+        bookingEndTime: new Date(bookingEndTime),
         cost: cost,
         image : image,
         totalTicket:npeople

@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const hbs = require('hbs');
 const app = express();
+const moment = require('moment');
 
 
 const customerModel = require('../../models/registerModel.js');
@@ -22,6 +23,16 @@ const { send } = require('process');
 
 
 app.set('view engine', 'hbs');
+
+
+hbs.registerHelper('dateTime',function(datetime){
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm').min;
+});
+
+hbs.registerHelper('dateTime1',function(datetime){
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm');
+});
+
 
 hbs.registerHelper('if_eq', function(a, b, opts) {
     if(a%b==0&&a!=0)
@@ -75,7 +86,9 @@ exports.userHomePage = async(req,res) =>{
   let day = new Date();
   /*CONVERTING DATE AND TIME TO SPECIFIC FORMAT*/
   let today = day.getDate()+'/'+(day.getMonth()+1)+'/'+day.getFullYear()+'@ '+day.getHours()+
-    ':'+day.getMinutes()+':'+day.getSeconds();    const events = await eventList.find( { 
+    ':'+day.getMinutes()+':'+day.getSeconds();    
+    const events = await eventList.find( { bookingStartTime :{$lte:day},
+      bookingEndTime:{$gte :day}
     }, {
     eventName: 1,
     description: 1,
@@ -230,7 +243,7 @@ exports.bookingTicket = async(req,res) => {
   let today = day.getDate()+'/'+(day.getMonth()+1)+'/'+day.getFullYear()+'@ '+day.getHours()+
           ':'+day.getMinutes()+':'+day.getSeconds();
   let datetimes = req.query.bookingEndTime;
-  if  (today  > datetimes) {
+  if  (day  > datetimes) {
     return res.jsonp([{message:"event already ended"}]);
     }
   if  (req.body.number<=0) {
