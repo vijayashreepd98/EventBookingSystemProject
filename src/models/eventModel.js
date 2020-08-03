@@ -18,11 +18,11 @@ let addEventModel = mongoose.model('addEvents', {
   },
   
   bookingStartTime : {
-    type:String,
+    type:Date,
     required: true
   },
   bookingEndTime: {
-    type:String,
+    type:Date,
     required:true
   },
   cost: {
