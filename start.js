@@ -4,6 +4,8 @@ const bodyParser = require('body-parser');
 const handlebars     = require('handlebars');
 const multer = require('multer');
 const app = express();
+
+const coockie = require('cookie-parser');
 adminRouter  = express.Router();
 userRouter  = express.Router();
 redirectRouter = express.Router();
@@ -16,11 +18,21 @@ let redirect = require('./src/db/routes/redirectRouter.js');
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
-
+app.use(session({secret:"viju",saveUninitialized:true,resave:false,name:"sesssion",
+user:{
+  name:""
+},
+cookie:{
+  maxAge:1000000,
+  sameSite:true
+}
+}));
 
 app.set('view engine', 'hbs');
 
 app.use(express.static('./uploads/'));
+app.use(express.static('./views/'));
+
 
 
 //UPLAODING FILE TO SPECIFIED LOCATION
@@ -40,8 +52,8 @@ let upload = multer({
 
 
 // HOME PAGE
-let sess;
 app.get('/' ,(req, res) => {
+  //res.header('Cache-Control','no-cache,private,no-store,must-revalidate,max-stale=0,pre-check=0,post-check=0');
   res.sendfile( './views/home.html');
 });
 
@@ -52,6 +64,11 @@ app.get('/adminLogin',(req, res) => {
 
 //ADMIN LOGIN CREDENTIAL VALIDATION
 app.post('/adminLogin',admin.login);
+
+
+// USER ADDING FEEDBACK
+
+app.post('/feedback', user.feedback);
   
 //ADMIN HOME PAGE CONATINING LIST OF EVENTS
 app.get('/adminHome',admin.adminHome);
@@ -66,6 +83,7 @@ app.post('/userRegistration', user.registration);
 
 //ADMIN ADDING NEW EVENTS
 app.get('/adminAddingEvent',(req,res) =>{
+
  res.sendfile('./views/addingEvent.html')
 });
 
@@ -141,6 +159,10 @@ app.get('/logout',(req,res)=>{
   res.redirect('/');
 });
 
+
+//CLEARING PPURCHASED TICKET HISTORY BY USER
+
+app.get('/clearHistory',user.clearHistory);
 
 app.use('/userRegistration',userRouter);
 
