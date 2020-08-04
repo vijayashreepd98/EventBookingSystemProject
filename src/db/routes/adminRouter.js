@@ -1,5 +1,5 @@
 const express = require('express');
-const session = require("express-session");
+const session = require('express-session');
 const validator = require('validator');
 const bodyParser = require('body-parser');
 const handlebars     = require('handlebars');
@@ -12,7 +12,7 @@ const hbs = require('hbs');
 const app = express();
 const moment = require('moment');
 const xlsxFile = require('read-excel-file/node');
-
+const coockie = require('cookie-parser');
 
 const customerModel = require('../../models/registerModel.js');
 const eventList = require('../../models/eventModel.js');
@@ -20,10 +20,19 @@ const commentList = require('../../models/addComment.js');
 const eventStatus = require('../../models/likeModel.js');
 const bookedTickets = require('../../models/ticketModel.js');
 const { doesNotMatch } = require('assert');
+//const { send } = require('process');
+const cookieParser = require('cookie-parser');
 require('../mongoose');
+app.use(session({secret: 'vijaya',saveUninitialized: true,resave: true,
+user:{
+  name:""
+}}));
 
 app.set('view engine', 'hbs');
+app.use(express.static("public"));
 
+
+app.use(cookieParser());
 hbs.registerHelper('if_eq', function(a, b, opts) {
     if(a%b==0&&a!=0)
         return opts.fn(this);
@@ -36,19 +45,21 @@ hbs.registerHelper('json',function(context){
 
 
 hbs.registerHelper('dateTime',function(datetime){
-  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm');
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  HH:mm');
 });
 
 hbs.registerHelper('datetimestring',function(datetime){
-  return moment(new Date(datetime)).format('YYYY-MM-DDThh:mm');
+  return moment(new Date(datetime)).format('YYYY-MM-DDTHH:mm');
 });
 
 
+let ssn;
 /* ADMIN LOGIN PAGE VALIDATION */
 exports.login = function(req,res){
   let name = req.body.username;
   let password = req.body.password;
   let array = [ name,password];
+  
   /* VERIFYING CREDENTIAL*/
   xlsxFile('./adminBook.xlsx').then((rows) =>{
     let flag =0;
@@ -69,6 +80,7 @@ exports.login = function(req,res){
 
 /*VIEW ADMIN HOME PAGE CONTAINS LIST OF EVENTS*/
 exports.adminHome = async function(req,res)  {
+
   /*ACCESSING ALL STORED EVENTS TO DISPLAY*/
     let events = await eventList.find( { }, {
       eventName: 1,
@@ -80,7 +92,7 @@ exports.adminHome = async function(req,res)  {
       image:1,
       _id: 1
       });
-      console.log(dateFormat(events[0].bookingStartTime,"d-mm-yyyy @ h:MM:ss"));
+      
         if (events) {
           res.render('eventView.hbs',{
             events: events
@@ -157,6 +169,7 @@ exports.adminHome = async function(req,res)  {
 
   /*CALLING EDIT  FUNCTION TO EDIT ALLREADY EXISTING EVENT*/
   exports.editEvent =function(req, res)  {
+
     res.render('editEvent.hbs', {
       eventName: req.query.eventName,
       description: req.query.description,
@@ -171,6 +184,7 @@ exports.adminHome = async function(req,res)  {
 
   /*STORING EDITED EVENT WITH UPDATE COMMAND*/
   exports.edittedEvent =async function(req,res) {
+
     let editedView = await eventList.findOneAndUpdate({
       eventName: req.body.eventName
     }, {

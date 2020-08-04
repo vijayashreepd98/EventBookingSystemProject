@@ -11,6 +11,7 @@ const fs = require('fs');
 const hbs = require('hbs');
 const app = express();
 const moment = require('moment');
+const coockie = require('cookie-parser');
 
 
 const customerModel = require('../../models/registerModel.js');
@@ -18,6 +19,8 @@ const eventList = require('../../models/eventModel.js');
 const commentList = require('../../models/addComment.js');
 const eventStatus = require('../../models/likeModel.js');
 const bookedTickets = require('../../models/ticketModel.js');
+const feedback = require('../../models/feedbackModel.js');
+
 const { doesNotMatch } = require('assert');
 const { send } = require('process');
 
@@ -25,12 +28,13 @@ const { send } = require('process');
 app.set('view engine', 'hbs');
 
 
+
 hbs.registerHelper('dateTime',function(datetime){
-  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm').min;
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm A').min;
 });
 
 hbs.registerHelper('dateTime1',function(datetime){
-  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm');
+  return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm A');
 });
 
 
@@ -287,7 +291,8 @@ exports.bookingTicket = async(req,res) => {
 
 /*USER VIEWING HIS PAST PURCHASED EVENT TICKET*/
 exports.soldTicket = async(req,res) => {
-  let soldTicket = await bookedTickets.find( {userName: req.query.username
+  let soldTicket = await bookedTickets.find( {userName: req.query.username,
+    status: 0
   }, {
     eventName: 1,
     userName: 1,
@@ -303,3 +308,49 @@ exports.soldTicket = async(req,res) => {
     username:req.query.username,
   });
 }
+
+
+
+/*CLEARING PURCHASED TICKET HISTORY*/
+
+exports.clearHistory = async(req,res)=> {
+  let updateTicketHistory = await bookedTickets.findOneAndUpdate({
+    userName: req.query.username
+  }, {
+    status: 1
+  });
+  let soldTicket = await bookedTickets.find( {userName: req.query.username,
+    status: 0
+  }, {
+    eventName: 1,
+    userName: 1,
+    noOfTicket :1,
+    bookingTime: 1,
+    cost: 1,
+    paid: 1,
+    image:1
+  }); 
+  let events = req.query.events;
+  res.render('purchasedTickets.hbs',{
+    soldTicket:soldTicket,
+    username:req.query.username,
+  });
+
+}
+
+
+exports.feedback =(req, res) =>{
+ // res.send("hai"+req.body.feedback);
+  let feedbackList =  new feedback({
+    feedback: req.body.feedback
+  });
+  feedbackList.save().then(() =>{
+    return res.send("Thank you for your feedback!!!..");
+  }).catch(()=>{
+    res.send("Sorry.. something went wrong....!!");
+  });
+
+}
+
+
+
