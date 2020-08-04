@@ -112,15 +112,16 @@
 <body>
   <div class="topnav">
     <a class="active" href="#home">
-      <i>WELCOME {{username}} FOR EVENT MANAGEMENT SYSTEM </i>
+      <i style="text-transform: uppercase;">WELCOME {{username}} FOR EVENT MANAGEMENT SYSTEM </i>
     </a>
     <div class="topnav-right">
+      <a href="/viewMoreToHome?username={{username}}">HOME 
+      </a>
       <a href="/buyTicket?image={{image}}&likes={{likes}}&eventId={{eventId}}&eventName={{eventName}}&username={{username}}&description={{description}}&bookingStartTime={{bookingStartTime}}&bookingEndTime={{bookingEndTime}}&cost={{cost}}&maxNoOfTicket={{maxNoOfTicket}}&comments={{comments}}&enentId={{eventId}}&
       status={{status}}&color1={{color1}}&color2={{color2}}">BUY TICKET
       </a>
-      <a href="/viewMoreToHome?username={{username}}">PREVIOUS
-      </a>
-      <a href="/">LOGOUT
+      
+      <a href="/userRegistration">LOGOUT
       </a>
     </div>
   </div>
@@ -224,23 +225,20 @@
           cnt = cnt + 1;
           document.getElementById("likeid").value = cnt
           let para = document.getElementById("like");
-          para.innerHTML = "LIKES :" + cnt;
-          para.style.bold;
+          para.innerHTML="<strong>LIKES :" + cnt+"</strong>";
           document.getElementById("status").value=document.getElementById("myid").style.color;
           document.getElementById("myid").style.color = "{{color2}}";
         } else if(cnt >={{ likes }} +1 && document.getElementById("myid").style.color == "blue") {
           cnt = cnt - 1;
           let para = document.getElementById("like");
-          para.innerHTML = "LIKES :" + cnt;
-          para.style.bold;
+          para.innerHTML="<strong>LIKES :" + cnt+"</strong>";
           document.getElementById("likeid").value = cnt
           document.getElementById("myid").style.color = "{{color1}}";
           document.getElementById("status").value=document.getElementById("myid").style.color;
         } else if(cnt == {{ likes }}  && document.getElementById("myid").style.color == "black") {
           cnt = cnt - 1;
           let para = document.getElementById("like");
-          para.innerHTML = "LIKES :" + cnt;
-          para.style.bold;
+          para.innerHTML="<strong>LIKES :" + cnt+"</strong>";
           document.getElementById("likeid").value = cnt;
           document.getElementById("status").value=document.getElementById("myid").style.color;
           document.getElementById("myid").style.color = "{{color2}}";
@@ -248,8 +246,7 @@
           cnt = cnt+1;
           document.getElementById("likeid").value = cnt
           let para = document.getElementById("like");
-          para.innerHTML = "LIKES :" + cnt;
-          para.style.bold;
+          para.innerHTML="<strong>LIKES :" + cnt+"</strong>";
           document.getElementById("myid").style.color = "{{color1}}";
           document.getElementById("status").value=document.getElementById("myid").style.color;
         }

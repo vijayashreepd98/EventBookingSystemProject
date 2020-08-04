@@ -13,7 +13,6 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
     <script>
 
-
       $(document).ready(() => {
         $("#submit").click((event)=>{
           let ename=$('#ename').attr("value");
@@ -44,6 +43,8 @@
 
           });
         });
+
+  
     </script>
     <style>
 
@@ -104,8 +105,8 @@
     <a class="active" href="#home"><i>WELCOME TO EVENT MANAGEMNET SYSTEM </i></a>
     <div class="topnav-right">
     
-      <a href="/editingToHome">PREVIOUS</a>
-      <a href="/">LOGOUT</a>
+      <a href="/editingToHome">HOME</a>
+      <a href="/adminLogin">LOGOUT</a>
     </div>
   </div>
   <h2 style = "text-align:  center;color:green">EDITING EVENT DETAILS</h2>
@@ -131,13 +132,13 @@
       <div class="form-group row">
         <label for="inputEmail" class="col-sm-2 col-form-label"><strong>Booking start time</strong></label>
           <div class="col-sm-10">
-            <input type="datetime-local" class="form-control" id="stime" placeholder="booking start time"value="{{bookingStartTime}}" name = "stime" required>
+            <input type="datetime-local" class="form-control" id="stime" placeholder="booking start time"value="{{bookingStartTime}}" name = "stime">
           </div>
       </div>
       <div class="form-group row">
         <label for="inputEmail" class="col-sm-2 col-form-label"><strong>Booking end time</strong></label>
         <div class="col-sm-10">
-          <input type="datetime-local" class="form-control" id="eetime" placeholder="booking end time"value="{{bookingEndTime}}" name="eetime" required>
+          <input type="datetime-local" class="form-control" id="eetime" placeholder="booking end time"  value="{{bookingEndTime}}"name="eetime">
         </div>
       </div>
       <div class="form-group row">

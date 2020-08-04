@@ -30,18 +30,26 @@
     </script>
     <script>
       Handlebars.registerHelper('dateTime',function(datetime){
-        return moment(datetime).format('D-MM-YYYY @  hh:mm');
+        return moment(datetime).format('D-MM-YYYY @  hh:mm A');
       });
 
     </script>
      <script>
       Handlebars.registerHelper('datetimestring',function(datetime){
-        return moment(datetime).format('YYYY-MM-DThh:mm');
+        return moment(datetime).format('YYYY-MM-DTHH:mm');
       });
 
     </script>
 
     <script>
+
+    function logout() {
+      let historyLength = window.history.length;
+      window.history.go(-(historyLength-3));
+     
+      //window.location.reload();
+    }
+    
     function fun(attr){
       let res = confirm("Are you sure to delete event!!!...");
         if(res){
@@ -68,6 +76,9 @@
         alert("Event not deleted!!!...");
       }
     }
+
+    
+    
   </script>
 
     <style>
@@ -180,7 +191,7 @@
     
     <div class="topnav-right">
       <a href="/adminAddingEvent" onclick="goBack()">ADD NEW EVENT</a>
-      <a href="/">LOGOUT</a>
+      <a  href="/adminLogin" >LOGOUT</a>
     </div>
   </div>
   <table class="table table-hover">
