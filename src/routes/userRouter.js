@@ -2,7 +2,6 @@ const express = require('express');
 const hbs = require('hbs');
 const app = express();
 const moment = require('moment');
-const coockie = require('cookie-parser');
 
 
 const customerModel = require('../models/registerModel.js');
