@@ -12,9 +12,9 @@ redirectRouter = express.Router();
 const port = process.env.PORT || 3000;
 
 
-let user = require('./src/db/routes/userRouter.js');
-let admin = require('./src/db/routes/adminRouter.js');
-let redirect = require('./src/db/routes/redirectRouter.js');
+let user = require('./src/routes/userRouter.js');
+let admin = require('./src/routes/adminRouter.js');
+let redirect = require('./src/routes/redirectRouter.js');
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
