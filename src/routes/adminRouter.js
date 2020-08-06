@@ -12,9 +12,15 @@ const eventList = require('../models/eventModel.js');
 const commentList = require('../models/addComment.js');
 const eventStatus = require('../models/likeModel.js');
 const bookedTickets = require('../models/ticketModel.js');
-const { doesNotMatch } = require('assert');
-//const { send } = require('process');
-const cookieParser = require('cookie-parser');
+const customerMongoLib = require('../mongoLib/registrationMongoLib.js');
+const eventMongoLib = require('../mongoLib/eventMongoLib.js');
+const eventStatusMongoLib = require('../mongoLib/eventStatusMongoLib.js');
+const commentMongoLib = require('../mongoLib/commentMongoLib.js');
+const soldTicketMongoLib = require('../mongoLib/soldTicketMongoLib.js');
+const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
+
+
+
 require('../db/mongoose');
 app.use(session({secret: 'vijaya',saveUninitialized: true,resave: true,
 user:{
@@ -25,7 +31,6 @@ app.set('view engine', 'hbs');
 app.use(express.static("public"));
 
 
-app.use(cookieParser());
 hbs.registerHelper('if_eq', function(a, b, opts) {
     if(a%b==0&&a!=0)
         return opts.fn(this);
@@ -46,7 +51,6 @@ hbs.registerHelper('datetimestring',function(datetime){
 });
 
 
-let ssn;
 /* ADMIN LOGIN PAGE VALIDATION */
 exports.login = function(req,res){
   let name = req.body.username;
@@ -75,22 +79,12 @@ exports.login = function(req,res){
 exports.adminHome = async function(req,res)  {
 
   /*ACCESSING ALL STORED EVENTS TO DISPLAY*/
-    let events = await eventList.find( { }, {
-      eventName: 1,
-      description: 1,
-      maxNoOfTicket: 1,
-      bookingStartTime: 1,
-      bookingEndTime: 1,
-      cost: 1,
-      image:1,
-      _id: 1
+    let events = await eventMongoLib.getAllEvents();
+    if (events) {
+      res.render('eventView.hbs',{
+      events: events
       });
-      
-        if (events) {
-          res.render('eventView.hbs',{
-            events: events
-          });
-        } 
+    } 
       
   }
 
@@ -109,7 +103,8 @@ exports.adminHome = async function(req,res)  {
     let sdate = dateFormat(bookingStartTime,"d-mm-yyyy @ h:MM:ss");
     let edate = dateFormat(bookingEndTime,"d-mm-yyyy  @ h:MM:ss");
     /*CHECKING NEW EVENTS WITH EXISTING EVENT WITH EVENT NAME*/
-    const events= await eventList.findOne({eventName:ename});
+    const events = await eventMongoLib.getEvents(ename);
+    
     if(events){
      return  res.send("EVENT WITH SAME NAME ALREADY PRESENT IN THE EVENT LIST....\nYOU CANNOT ADD...!!");
     }
@@ -125,30 +120,18 @@ exports.adminHome = async function(req,res)  {
       if (image === "" || ename === "" || edetails === "" ||npeople === "" ||bookingStartTime === "" || bookingEndTime === "" || cost === "") {
         return res.send('Please provide valid information ..All are mandatory');
       }
-      let customer = await customerModel.find({
-          
-      },{
-        name:1
-      });
+
+      let customer = await customerMongoLib.getAllUser();
+      
       /*DEFAULTLY CREATING EVENT STATUS FOR EACH CUSTOMER */
       for(let i=0;i<customer.length;i++){
-        let newUser =  new eventStatus({
-          eventName: ename,
-          userName: customer[i].name,
-          status: false,
-      });
-      newUser.save();
+        let newUser =await  eventStatusMongoLib.createNewStatus(ename,customer[i].name,false);
+        newUser.save();
       }
-      let addEventDetails = new eventList({
-        eventName: ename,
-        description: edetails,
-        maxNoOfTicket: npeople,
-        bookingStartTime: new Date(bookingStartTime),
-        bookingEndTime: new Date(bookingEndTime),
-        cost: cost,
-        image : image,
-        totalTicket:npeople
-      });
+
+      let addEventDetails = eventMongoLib.addNewEvent(ename,edetails,npeople,new Date(bookingStartTime),new Date(bookingEndTime),
+      cost,image,npeople);
+
       addEventDetails.save().then(() => {
         
         return res.send("EVENT ADDED SUCCESSFULLY!!!");
@@ -178,16 +161,9 @@ exports.adminHome = async function(req,res)  {
   /*STORING EDITED EVENT WITH UPDATE COMMAND*/
   exports.edittedEvent =async function(req,res) {
 
-    let editedView = await eventList.findOneAndUpdate({
-      eventName: req.body.eventName
-    }, {
-      description: req.body.description,
-      bookingStartTime: req.body.stime,
-      bookingEndTime: req.body.eetime,
-      cost: req.body.cost,
-      maxNoOfTicket: req.body.maxNoOfTicket
-    });
-    
+    let editedView = await eventMongoLib.updateEvent(req.body.eventName,req.body.description,req.body.stime,
+       req.body.eetime,req.body.cost,req.body.maxNoOfTicket );
+
     if (editedView) {
       return res.jsonp([{message:"updated event successfully!"}]);
     } else {
@@ -200,21 +176,11 @@ exports.adminHome = async function(req,res)  {
 
   /*ADMIN DELETING PERTICULAR EVENT BY CALLING DELETE FUNCTION*/
   exports.deleteEvent = async function (req, res)  {  
-    let deletedEvent = await eventList.findOneAndDelete({
-      eventName: req.body.eventName,
-      description:req.body.description,
-      maxNoOfTicket:req.body.maxNoOfTicket,
-      bookingStartTime:req.body.stime,
-      bookingEndTime:req.body.eetime,
-      cost:req.body.cost
-  
-    });
-    let deletedView = await commentList.deleteMany({
-      eventName: req.body.eventName 
-    });
-    let eventStatuss =  await eventStatus.deleteMany({
-       eventName:req.body.eventName
-     });
+    let deletedEvent =  await eventMongoLib.eventDelete(req.body.eventName,req.body.description,req.body.maxNoOfTicket,
+      req.body.stime,req.body.eetime,req.body.cost);
+    let deletedView = await commentMongoLib.deleteComment(req.body.eventName );
+    let eventStatus = await eventStatusMongoLib.deleteStatus(req.body.eventName);
+   
     if (deletedEvent) {
       return  res.jsonp([{message:"Event deleted successfuly!!.."}]);
     } else {
@@ -227,18 +193,10 @@ exports.adminHome = async function(req,res)  {
 
   /*ADMIN VIEWING EVENT STATUS FOR PERTICULAR EVENT*/
   exports.eventStatus = async function(req,res)  {
-    let soldTicket = await bookedTickets.find({eventName:req.query.eventName,
-      description:req.query.description,
-      image:req.query.image
-    });
-    let likes = await eventStatus.find({
-      status:true,
-      eventName:req.query.eventName
-    });
-    let comments =await commentList.find({
-      eventName:req.query.eventName
-    });
-   
+    let soldTicket= await soldTicketMongoLib.getSoldTicket(req.query.eventName,req.query.description,req.query.image);
+    let likes = await eventStatusMongoLib.viewEventStatus(true,req.query.eventName);
+    let comments = await commentMongoLib.viewComments(req.query.eventName) ;
+    
     res.render("eventDetails.hbs",{
       soldTicket:soldTicket,
       likes :likes,

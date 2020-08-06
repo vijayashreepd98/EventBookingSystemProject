@@ -2,6 +2,8 @@ const express = require('express');
 const hbs = require('hbs');
 const app = express();
 const moment = require('moment');
+const session = require('express-session');
+
 
 
 const customerModel = require('../models/registerModel.js');
@@ -10,14 +12,24 @@ const commentList = require('../models/addComment.js');
 const eventStatus = require('../models/likeModel.js');
 const bookedTickets = require('../models/ticketModel.js');
 const feedback = require('../models/feedbackModel.js');
+const customerMongoLib = require('../mongoLib/registrationMongoLib.js');
+const eventMongoLib = require('../mongoLib/eventMongoLib.js');
+const eventStatusMongoLib = require('../mongoLib/eventStatusMongoLib.js');
+const commentMongoLib = require('../mongoLib/commentMongoLib.js');
+const soldTicketMongoLib = require('../mongoLib/soldTicketMongoLib.js');
+const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
 
-const { doesNotMatch } = require('assert');
-const { send } = require('process');
 
 
 app.set('view engine', 'hbs');
 
-
+app.use(session({
+  cookieName:'session',
+  secret:"vijaya",
+  saveUninitialized:true,
+  resave:true
+  
+}));
 
 hbs.registerHelper('dateTime',function(datetime){
   return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm A').min;
@@ -25,6 +37,34 @@ hbs.registerHelper('dateTime',function(datetime){
 
 hbs.registerHelper('dateTime1',function(datetime){
   return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm A');
+});
+
+hbs.registerHelper('if_Equal', function(value1,value2,option){
+  if(value1== value2){
+    return option.fn(this);
+  }else{
+    option.inverse(this);
+  }
+
+});
+
+hbs.registerHelper('if_Greater', function(value1,value2,option){
+  if(value1 >= value2){
+    return option.fn(this);
+  }else{
+    option.inverse(this);
+  }
+
+});
+
+
+hbs.registerHelper('if_Lesser', function(value1,value2,option){
+  if(value1 <= value2){
+    return option.fn(this);
+  }else{
+    option.inverse(this);
+  }
+
 });
 
 
@@ -39,33 +79,24 @@ hbs.registerHelper('json',function(context){
 });
 
 
+
+
 /*USER REGISTRATION PAGE*/
 exports.registration = async function(req, res)  {
   let name = req.body.username;    
   let password = req.body.password;
-  let registered = await customerModel.findOne({name:name});
+  let registered = await customerMongoLib.getCustomer(name,password);
+  
   if(registered){
     res.send("USER ALREADY EXISTS!!!...");
   } else {
-    let events = await eventList.find({
-    },{
-      eventName:1
-    });
-
+    let events = await eventMongoLib.getEventList();
     /*CREATING DEFAULT EVENT STATUS FOR AVAILABLE EVENTS FOR  NEW CUSTOMER*/
-    for(let i=0;i<events.length;i++){
-      let newUser = await new eventStatus({
-        eventName: events[i].eventName,
-        userName: name,
-        status: false,
-      });
+    for(let i=0;i< events.length;i++){
+      let newUser =await  eventStatusMongoLib.createNewStatus(events[i].eventName,name,false);
       newUser.save();
     }
-    let register = new customerModel({
-      name: name,
-      password: password
-    });
-      
+    let register = customerMongoLib.createNewUser(name,password);
     register.save().then(async() => {
       res.send("success");
     }).catch(() => {
@@ -77,29 +108,49 @@ exports.registration = async function(req, res)  {
 
 /*USER HOME PAGE*/
 exports.userHomePage = async(req,res) =>{
+  
   let day = new Date();
   /*CONVERTING DATE AND TIME TO SPECIFIC FORMAT*/
+  let status= req.query.status;
+  if(status ==0) {
   let today = day.getDate()+'/'+(day.getMonth()+1)+'/'+day.getFullYear()+'@ '+day.getHours()+
-    ':'+day.getMinutes()+':'+day.getSeconds();    
-    const events = await eventList.find( { bookingStartTime :{$lte:day},
-      bookingEndTime:{$gte :day}
-    }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    likes: 1,
-    image: 1,
-    _id: 1
-  });
-  if (events) {
-    res.render('userEventView.hbs', {
-      events:events,
-      username:req.query.username
+    ':'+day.getMinutes()+':'+day.getSeconds();  
+    const events = await eventMongoLib.getActiveEvents(day);  
+    
+    if (events) {
+      res.render('userEventView.hbs', {
+        events:events,
+        username:req.query.username,
+        status:req.query.status,
+        description:req.query.description
       });
     }
+  }else if(status ==1) {
+    let today = day.getDate()+'/'+(day.getMonth()+1)+'/'+day.getFullYear()+'@ '+day.getHours()+
+    ':'+day.getMinutes()+':'+day.getSeconds(); 
+    const events = await eventMongoLib.getUpcomingEvents(day);  
+    if (events) {
+      res.render('userEventView.hbs', {
+        events:events,
+        username:req.query.username,
+        status:req.query.status,
+        description:req.query.description
+      });
+    }
+
+  } else{
+    const events = await eventMongoLib.getAllEvents(); 
+    if (events) {
+      res.render('userEventView.hbs', {
+        events:events,
+        username:req.query.username,
+        status:req.query.status,
+        description:"ALL EVENTS",
+        today:new Date
+      });
+    }
+
+  }
 }
 
 
@@ -108,26 +159,22 @@ exports.userHomePage = async(req,res) =>{
 exports.login = async(req,res)=> {
   let name = req.body.name;
   let password = req.body.password;
-  let user = await customerModel.findOne( {
-    name:name,
-    password: password
-  });
+  let user = await customerMongoLib.getCustomer(name,password)
+  
   /*IF ENETERED USER NAME IS ALREADY AVAILABLE*/
   if(user){
     res.send("success");
   } else {
     res.send("fail")
   }
+  
 }
 
 
 /*VIEWING VIEW MORE DETAILS OF PERTICULR EVENT WHICH CONATIND LIKES , COMMENTS  , BOOKING PERTICULAR EVENT*/
 exports.viewMore = async(req,res) =>{
-  let comments = await commentList.find({ eventName: req.query.eventName,
-    eventId:req.query.eventId
-  });
-  const  allEvents  = await  eventStatus.findOne( {eventName: req.query.eventName,userName: req.query.username 
-  });
+  let comments = await commentMongoLib.getComments(req.query.eventName,req.query.eventId);
+  let allEvents = await eventStatusMongoLib.gettingEventStatus( req.query.eventName,req.query.username )
   let color1, color2;
   if(!allEvents){
     return  res.send("try again");
@@ -163,37 +210,27 @@ exports.viewMore = async(req,res) =>{
 
 /*EVENT LIKE STATUS*/
 exports.liked = async (req,res)=>{
-  let event = await eventList.findOneAndUpdate({
-    _id: req.body.id
-  }, {
-    likes: req.body.like
-  });
+ 
+  let event = await  eventMongoLib.updateEvents(req.body.id,req.body.like);
   let status;
+ 
   /*IF LIKE BUTTON COLOR IS "BLUE" THEN EVENT STAUS WILL BE TRUE ELSE FALSE*/
   if(req.body.status === "blue"){
     status = true;
   } else {
     status = false;
   }
-  let activity = await eventStatus.findOneAndUpdate({
-    userName: req.body.userName, 
-    eventName: req.body.eventName
-  }, {
-    status: status,
-    likes: req.body.like 
-  });
+
+  let activity = await eventStatusMongoLib.eventStatusUpdate(req.body.userName,req.body.eventName,status,req.body.like );
+  
 }
 
 
 /*ADDING COMMENT TO PERTICULAR EVENT*/
 exports.addComment = async(req, res) => {
-  let addComment = new commentList({
-    eventName: req.body.eventName,
-    eventId: req.body.eventId,
-    userName: req.body.userName,
-    comments: req.body.comments,
-    time: req.body.times
-  });
+  let addComment = commentMongoLib.addComments( req.body.eventName,req.body.eventId,req.body.userName,req.body.comments,
+    req.body.times);
+  
   addComment.save().then(()=>{
     res.jsonp([{time:req.body.times ,
       eventId:req.body.eventId,
@@ -243,34 +280,26 @@ exports.bookingTicket = async(req,res) => {
   if  (req.body.number<=0) {
     return res.jsonp([{message:"Please provide valid number!!!.."}]);
   }
-  let event = await eventList.findOne( { 
-    eventName: req.query.eventName
-  });
+
+  let event = await eventMongoLib.getEvents(req.query.eventName);
+  
   if (req.body.number > event.maxNoOfTicket) {
     return res.jsonp([{message:"You cant book more ticket..Avalable ticket is "+event.maxNoOfTicket}]);
   }
   let newNoOfTicket = event.maxNoOfTicket - req.body.number;
-  let updateTicket = await eventList.findOneAndUpdate({
-    eventName: req.query.eventName
-  }, {
-    maxNoOfTicket : newNoOfTicket
-  });
+
+
+  let updateTicket = await eventMongoLib.updateTicket(req.query.eventName,newNoOfTicket);
   
   if (updateTicket) {
     console.log('updated successfully!!!');
     } else {
     console.log('failed to update the ticket count!!!');
   }
-  let soldTicket = new  bookedTickets( {
-    userName: req.query.username,
-    eventName: req.query.eventName,
-    noOfTicket: req.body.number,
-    bookingTime: today,
-    cost:req.query.cost,
-    paid:req.query.cost*req.body.number,
-    image:req.query.image,
-    description:req.query.description
-  });
+
+  let soldTicket = soldTicketMongoLib.bookingTicket(req.query.username,req.query.eventName,
+    req.body.number,today,req.query.cost,req.query.cost*req.body.number,req.query.image,req.query.description);
+  
   soldTicket.save().then(() => {
     return  res.jsonp([{message:"ticket booked successfuly!!.."}]);
   }).catch(() => {
@@ -281,18 +310,7 @@ exports.bookingTicket = async(req,res) => {
 
 /*USER VIEWING HIS PAST PURCHASED EVENT TICKET*/
 exports.soldTicket = async(req,res) => {
-  let soldTicket = await bookedTickets.find( {userName: req.query.username,
-    status: 0
-  }, {
-    eventName: 1,
-    userName: 1,
-    noOfTicket :1,
-    bookingTime: 1,
-    cost: 1,
-    paid: 1,
-    image:1
-  }); 
-  let events = req.query.events;
+  let soldTicket = await soldTicketMongoLib.getBookedTickets(req.query.username,0);
   res.render('purchasedTickets.hbs',{
     soldTicket:soldTicket,
     username:req.query.username,
@@ -304,22 +322,9 @@ exports.soldTicket = async(req,res) => {
 /*CLEARING PURCHASED TICKET HISTORY*/
 
 exports.clearHistory = async(req,res)=> {
-  let updateTicketHistory = await bookedTickets.findOneAndUpdate({
-    userName: req.query.username
-  }, {
-    status: 1
-  });
-  let soldTicket = await bookedTickets.find( {userName: req.query.username,
-    status: 0
-  }, {
-    eventName: 1,
-    userName: 1,
-    noOfTicket :1,
-    bookingTime: 1,
-    cost: 1,
-    paid: 1,
-    image:1
-  }); 
+  let updatedTicketHistory = await soldTicketMongoLib.updatingTicketHistory(req.query.username);
+  let soldTicket = await soldTicketMongoLib.getBookedTickets(req.query.username,0);
+  
   let events = req.query.events;
   res.render('purchasedTickets.hbs',{
     soldTicket:soldTicket,
@@ -330,9 +335,8 @@ exports.clearHistory = async(req,res)=> {
 
 
 exports.feedback =(req, res) =>{
-  let feedbackList =  new feedback({
-    feedback: req.body.feedback
-  });
+  let feedbackList = feedbackMongoLib.newFeedback(req.body.feedback);
+  
   feedbackList.save().then(() =>{
     return res.send("Thank you for your feedback!!!..");
   }).catch(()=>{

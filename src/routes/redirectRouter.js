@@ -7,10 +7,14 @@ const eventList = require('../models/eventModel.js');
 const commentList = require('../models/addComment.js');
 const eventStatus = require('../models/likeModel.js');
 const bookedTickets = require('../models/ticketModel.js');
-const { doesNotMatch } = require('assert');
+const customerMongoLib = require('../mongoLib/registrationMongoLib.js');
+const eventMongoLib = require('../mongoLib/eventMongoLib.js');
+const eventStatusMongoLib = require('../mongoLib/eventStatusMongoLib.js');
+const commentMongoLib = require('../mongoLib/commentMongoLib.js');
+const soldTicketMongoLib = require('../mongoLib/soldTicketMongoLib.js');
+const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
 require('../db/mongoose');
 
-const { send } = require('process');
 
 app.set('view engine', 'hbs');
 
@@ -29,26 +33,18 @@ hbs.registerHelper('json',function(context){
 
 /*REDIRECTNG FROM EVENT BOOKING TO USER HOME PAGE*/
 exports.bookingToHome = async function(req,res){
-  let comments = await commentList.find({ eventName: req.query.eventName,
-    eventId:req.query.eventId
-  });
-    let  events  =  await eventStatus.find( {eventName: req.query.eventName,userName: req.query.username 
-  });
+  let comments  = await commentMongoLib.getComments(req.query.eventName,req.query.eventId);
+  let events = await eventStatusMongoLib.gettingEventStatus( req.query.eventName,req.query.username );
     
   if (events.length===0) {
-    let newUser = new eventStatus({
-    eventName: req.query.eventName,
-    userName: req.query.username,
-    status: false,
-  });
+    let newUser = eventStatusMongoLib.createNewStatus(req.query.eventName, req.query.username,false);
     newUser.save().then(( ) => {
       console.log("success");
     }).catch(()=>{
       console.log("Failed");});
     }
-    let  allEvents  =  await eventStatus.find( {eventName: req.query.eventName,userName: req.query.username 
-    });
-    
+
+    let allEvents = await eventStatusMongoLib.gettingEventStatus(req.query.eventName, req.query.username );
   
     let color1, color2;
     if(!allEvents){
@@ -85,23 +81,15 @@ exports.bookingToHome = async function(req,res){
 
 /*REDIRECTING FROM PURCHASED HISTORY PAGE TO USER HOME PAGE*/
 exports.purchaseToHome = async function(req,res) {
-  let events = await eventList.find( { 
-  }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    likes: 1,
-    image:1,
-    _id: 1
-  });
+ 
+  let events =await eventMongoLib.getAllEvents();
       
   if (events) {
     return res.render('userEventView.hbs', {
       events:events,
       username:req.query.username,
+      status:req.query.status,
+      today:new Date()
     });
   } 
              
@@ -111,23 +99,14 @@ exports.purchaseToHome = async function(req,res) {
 
 /*REDIRECTING FROM VIEW MORE PAGE TO USER HOME PAGE*/
 exports.viewMoreToHome = async function(req,res) {
-  let events = await eventList.find( { 
-  }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    likes: 1,
-    image:1,
-    _id: 1
-  });
-   
+  let events = await eventMongoLib.getAllEvents();
+  let today = new Date();  
   if (events) {
     return res.render('userEventView.hbs', {
       events:events,
       username:req.query.username,
+      status:req.query.status,
+      today:today
     });
   }       
            
@@ -137,44 +116,35 @@ exports.viewMoreToHome = async function(req,res) {
 
 /*REDIRECTING FROM TICKET BOOKING PAGE TO  USER HOME PAGE*/
 exports.bookingToviewMore = async function(req,res) {
-  let comments = await commentList.find({ eventName: req.query.eventName,
-    eventId:req.query.eventId
-  });
-  let  events  =  await eventStatus.find( {eventName: req.query.eventName,userName: req.query.username 
-  });
-    
+  let comments = await commentMongoLib.getComments(req.query.eventName,req.query.eventId);
+  let events = await eventStatusMongoLib.gettingEventStatus(req.query.eventName,req.query.username );
+  
   if (events.length===0) {
-    let newUser = new eventStatus({
-      eventName: req.query.eventName,
-      userName: req.query.username,
-      status: false,
-    });
+    let newUser = eventStatusMongoLib.createNewStatus(req.query.eventName,req.query.username,false);
     newUser.save().then(( ) => {
       console.log("success");
     }).catch(()=>{
       console.log("sory");
     });
   }
-  let eventLists = await eventList.findOne({
-    eventName:req.query.eventName
-  },{
-    likes:1
-  });
-  let  allEvents  =  await eventStatus.find( {eventName: req.query.eventName,userName: req.query.username 
-  });
+
+  let eventLists = await eventMongoLib.getLikes(req.query.eventName);
+  let allEvents = await eventStatusMongoLib.gettingEventStatus(req.query.eventName, req.query.username );
+
     
   let color1, color2;
   if(!allEvents){
     return  res.send("try again");
   }
-  if (allEvents[0].status === true) {
+  if (allEvents.status === true) {
     color1 = "blue";
     color2 = "black"
   } else {
     color1 = "black";
     color2 = "blue"
   }
-   
+  
+ 
   res.render('viewMore.hbs',{
     description: req.query.description,
     bookingStartTime: req.query.bookingStartTime,
@@ -186,7 +156,7 @@ exports.bookingToviewMore = async function(req,res) {
     comments:comments,
     eventId:req.query.eventId,
     likes: eventLists.likes,
-    status: allEvents[0].status,
+    status: allEvents.status,
     color1: color1,
     color2: color2,
     image:req.query.image
@@ -198,16 +168,7 @@ exports.bookingToviewMore = async function(req,res) {
 
   /*REDIRECTING FROM EVENT ADDING PAGE TO ADMIN EVENT LIST PAGE*/
 exports.eventAddingToeventList = async function(req,res) {
-  let events = await eventList.find( { }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    image:1,
-    _id: 1
-  });
+  let events = await eventMongoLib.getAllEvents();
   if (events) {
     res.render('eventView.hbs',{
     events: events
@@ -218,16 +179,7 @@ exports.eventAddingToeventList = async function(req,res) {
 
 /*REDIRECTING FROM EDITING PAGE TO ADMIN HOME PAGE*/
 exports.editingToHome = async function(req,res) {
-  let events = await eventList.find( { }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    image:1,
-    _id: 1
-  });
+  let events = await eventMongoLib.getAllEvents();
   if (events) {
     res.render('eventView.hbs',{
       events: events
@@ -239,16 +191,8 @@ exports.editingToHome = async function(req,res) {
 
 /*REDIRECTING FROM EVENTSTATUS DETAILS TO ADMIN HOME PAGE*/
 exports.eventdetailsToeventList = async function(req,res ){
-  let events = await eventList.find( { }, {
-    eventName: 1,
-    description: 1,
-    maxNoOfTicket: 1,
-    bookingStartTime: 1,
-    bookingEndTime: 1,
-    cost: 1,
-    image:1,
-    _id: 1
-  });
+  let events = await eventMongoLib.getAllEvents();
+
   if (events) {
     res.render('eventView.hbs',{
       events: events
