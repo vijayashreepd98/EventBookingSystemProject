@@ -47,6 +47,13 @@
       });
       }
       }
+
+
+      function cancel(){
+        $('#feedback').val(" ");
+        window.location.reload();
+
+      }
       </script>
     <script>
       Handlebars.registerHelper('dateTime1',function(datetime){
@@ -66,7 +73,46 @@
       });
       
     </script>
+    <script>
+    
+      Handlebars.registerHelper('if_Equal', function(value1,value2,option){
+        if(value1%value2==0&&value1!=0){
+          return option.fn(this);
+        }else{
+          option.inverse(this);
+        }
+      
+      
+      });
+      
+    </script>
+    <script>
+    
+      Handlebars.registerHelper('if_Greter', function(value1,value2,option){
+        if(value1!=value2){
+          return option.fn(this);
+        }else{
+          option.inverse(this);
+        }
+      
+      
+      });
+      
+    </script>
 
+    <script>
+    
+      Handlebars.registerHelper('if_Lesser', function(value1,value2,option){
+        if(value1<=value2){
+          return option.fn(this);
+        }else{
+          option.inverse(this);
+        }
+      
+      
+      });
+      
+    </script>
     <style>
       body{
         background-color: #FFF5EE;
@@ -80,7 +126,7 @@
       }
       table{
         margin: 30px;
-        margin-top: 10px;
+        margin-top: -20px;
       }
       
       table th{
@@ -178,11 +224,18 @@
   <div class="topnav">
     <a class="active" href="#home"><i>WELCOME {{username}} FOR EVENT MANAGEMENT SYSTEM </i></a>
     <div class="topnav-right">
-   
+      
+      <a href="" type="button" data-toggle="dropdown">SEARCH
+        <span class="caret"></span></a> 
+        <ul class="dropdown-menu">
+          <li><a href="/userHomePage?username={{username}}&status=0&description=ACTIVE EVENTS">ACTIVE EVENTS</a></li>
+          <li><a href="/userHomePage?username={{username}}&status=1&description=UPCOMING EVENTS" >UPCOMING EVENTS</a></li>
+          <li><a href="/userHomePage?username={{username}}&status=2&description=ALL EVENTS" >ALL EVENTS</a></li>
 
+          </ul>
       <a href="#"  data-toggle="modal" data-target="#myModal">Feedback</a>
       <a href="/soldTicketList?username={{username}}">Purchased ticket</a>
-      <a href="/userRegistration">LOGOUT</a>
+      <a href="/userRegistration"onclick="window.history.go(-window.history.length);">LOGOUT</a>
          <div class="modal fade" id="myModal" role="dialog">
     <div class="modal-dialog">
     
@@ -191,13 +244,16 @@
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
 
-          <h4 class="modal-title">FEEDBACK</h4>
+          <h4 class="modal-title" >FEEDBACK</h4>
         </div>
         <div class="modal-body">
           
-          <input type="text" name="feedback" class="feedback" id="feedback" style="height: 100px;width:460px;">
+          <textarea name="feedback" class="feedback" id="feedback" style="height: 100px;width:460px;">
+          </textarea>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel()">CANCEL</button>
+
           <button type="button" class="btn btn-default" data-dismiss="modal" onclick="submit()">SUBMIT</button>
         </div>
       </div>
@@ -207,9 +263,12 @@
   
 </div>
     </div>
+    
   </div>
-  
+
+  <h1 style="font-size:30px;color:brown;margin-left:40px;"><strong><i>{{description}}</i></strong></h1>
   <table class="table table-hover">
+   
     <div class="container">
       <div class="row justify-content-center">
         <table>
@@ -231,8 +290,31 @@
                     <p class='card-text'>Available tickets:{{this.maxNoOfTicket}}</p>
                     <p class='card-text'>Booking starts from:{{dateTime1 this.bookingStartTime}},  </p><p class="card-text">to:{{dateTime1 this.bookingEndTime}}</p>
                     <h2 class='card-text'>COST:{{this.cost}}</h2>
+                   
+                    {{#if_Equal ../status 1}}
                     <a href='/viewMore?image={{this.image}}&likes={{this.likes}}&username={{../username}}&eventId={{this._id}}&eventName={{this.eventName}}&description={{this.description}}&maxNoOfTicket={{this.maxNoOfTicket}}
-                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success'>View More....</a>
+                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success' style="background-color: green;"onclick="alert('Event not started....!!!');return false;">View More....</a>
+                    {{/if_Equal}}
+                    {{#if_Equal ../status 0}}
+                    <a href='/viewMore?image={{this.image}}&likes={{this.likes}}&username={{../username}}&eventId={{this._id}}&eventName={{this.eventName}}&description={{this.description}}&maxNoOfTicket={{this.maxNoOfTicket}}
+                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success' style="background-color: green;">View More....</a>
+                    {{/if_Equal}}
+                    {{#if_Equal ../status 2}}
+                    {{#if_Greater  ../today this.bookingStartTime}}
+                    <a href='/viewMore?image={{this.image}}&likes={{this.likes}}&username={{../username}}&eventId={{this._id}}&eventName={{this.eventName}}&description={{this.description}}&maxNoOfTicket={{this.maxNoOfTicket}}
+                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success' style="background-color: green;">View More....</a>
+                    {{/if_Greater}}
+
+                    {{#if_Lesser ../today this.bookingStartTime}}
+                    <p style="color: red;">Event not started</p>
+                    <a href='/viewMore?image={{this.image}}&likes={{this.likes}}&username={{../username}}&eventId={{this._id}}&eventName={{this.eventName}}&description={{this.description}}&maxNoOfTicket={{this.maxNoOfTicket}}
+                    &bookingStartTime={{this.bookingStartTime}}&bookingEndTime={{this.bookingEndTime}}&cost={{this.cost}}' class='btn btn-success' style="background-color: green;"onclick="alert('Event not started....!!!');return false;">View More....</a>
+                    {{/if_Lesser}}
+                    {{/if_Equal}}
+
+
+
+
                   </div>
                 </div>
             </div>

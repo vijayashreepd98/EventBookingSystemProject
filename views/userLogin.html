@@ -42,7 +42,7 @@
         success:function(response){
           if(response == "success"){
             alert("Logged in successfully!!...");
-            window.location.href="/userHomePage?username="+$('#inputEmail').val();
+            window.location.href="/userHomePage?username="+$('#inputEmail').val()+"&status=2";
           }
           if(response == "fail"){
             alert("LOGIN FAILED...\n Please try again!!!...");

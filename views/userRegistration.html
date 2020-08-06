@@ -48,7 +48,7 @@
             success:function(response){
               if(response=="success"){
                 alert("Registration Successful!!!....");
-                window.location.href="/userHomePage?username="+username;
+                window.location.href="/userHomePage?username="+username+"&status=2";
               }
               if( response=="error"){
                 alert("Registration failed!!!\nPlease try  again after some time...");
