@@ -1,10 +1,8 @@
 const express = require('express');
-const session = require("express-session");
 
 const multer = require('multer');
 const app = express();
 
-const coockie = require('cookie-parser');
 adminRouter  = express.Router();
 userRouter  = express.Router();
 redirectRouter = express.Router();
@@ -17,15 +15,6 @@ let redirect = require('./src/routes/redirectRouter.js');
 
 app.use(express.urlencoded({extended:true}));
 app.use(express.json()); 
-app.use(session({secret:"viju",saveUninitialized:true,resave:false,name:"sesssion",
-user:{
-  name:""
-},
-cookie:{
-  maxAge:1000000,
-  sameSite:true
-}
-}));
 
 app.set('view engine', 'hbs');
 
@@ -154,17 +143,13 @@ app.get("/eventStatus",admin.eventStatus);
 //REDIRECTING FROM EVENT DETAILS TO EVENT LIST PF ADMIN PAGE
 app.get('/eventdetailsToeventList',redirect.eventdetailsToeventList);
 
-app.get('/logout',(req,res)=>{
-  
-  res.redirect('/');
-});
-
-
 //CLEARING PPURCHASED TICKET HISTORY BY USER
 
 app.get('/clearHistory',user.clearHistory);
 
+//CLEARING FEEDBACK
 
+app.post('/clearFeedback' ,admin.clearFeedback);
 
 app.use('/userRegistration',userRouter);
 

@@ -1,5 +1,4 @@
-let mongoose = require('mongoose');
-
+let mongoose = require('../../base/mongoose');
 let addCommentModel = mongoose.model('comments', {
   eventName: {
     type:String

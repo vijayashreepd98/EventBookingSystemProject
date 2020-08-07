@@ -30,6 +30,14 @@
           option.inverse(this);
         }
       });
+      function clearHistory(){
+        let res = confirm("Are you sure?");
+        if(res) {
+          window.location.href= "/clearHistory?username={{username}}";
+        }else {
+          window.location.reload();
+        }
+      }
     </script>
 
   <style>
@@ -143,7 +151,7 @@
     <a class="active" href="#home"><i>WELCOME {{username}} FOR EVENT MANAGEMENT SYSTEM ..THIS IS YOUR TICKET PURCHASED HISTORY</i></a> 
     <div class="topnav-right">
       <a href="/purchaseToHome?username={{username}}&status=2">HOME PAGE</a>
-      <a href="/clearHistory?username={{username}}">CLEAR HISTORY</a>
+      <a href=" "onclick = "clearHistory()">CLEAR HISTORY</a>
       <a href="/userRegistration">LOGOUT</a>
     </div>
   </div>

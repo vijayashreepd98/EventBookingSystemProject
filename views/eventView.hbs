@@ -43,11 +43,29 @@
 
     <script>
 
-    function logout() {
-      let historyLength = window.history.length;
-      window.history.go(-(historyLength-3));
+
+    function Clear() {
+      let res = confirm("Are you sure to clear the feedback!!!...");
+      if(res) {
+       
+          $.ajax({
+            url:"/clearFeedback",
+            method:"POST",
+            dataType:"text",
+            
+            success:function(response){
+              alert(response);
+              window.location.reload();
+            }
+          });
+      }
+      
+
+    }
+
+    function cancel() {
      
-      //window.location.reload();
+      window.location.reload();
     }
     
     function fun(attr){
@@ -180,6 +198,7 @@
     .inner{
       overflow:hidden;
     }
+    
   </style>
  
 </head>
@@ -190,10 +209,40 @@
     <a class="active" href="#home"><i>WELCOME TO EVENT MANAGEMNET SYSTEM </i></a>
     
     <div class="topnav-right">
+      <a href="#" data-toggle="modal" data-target="#myModal">VIEW FEEDBACK</a>
+      
+
       <a href="/adminAddingEvent" onclick="goBack()">ADD NEW EVENT</a>
       <a  href="/adminLogin" >LOGOUT</a>
+      
+      <div class="modal fade" id="myModal" role="dialog">
+        <div class="modal-dialog" style="overflow-y: scroll; max-height:85%;  margin-top: 50px; margin-bottom:50px;">
+           <div class="modal-content" style="background-color: burlywood;">
+            <div class="modal-header" style="background-color:mediumseagreen">
+              <h1><strong>FEEDBACK</strong></h1>
+              <button type="button" class="close" data-dismiss="modal" style="position: absolute;right:10px;">&times;</button>
+            </div>
+            <div class="modal-body">
+              <table>
+              {{#each feedbacks}}
+                <tr style="position: absolute;right:10px; width:450px;"><td style="border:1px solid   black;padding-left:20px;padding-right:20px;width:300px;"><p >{{this.feedback}}</p></td>
+                <td style="border:1px solid black; padding left 40px; width:150px;"><p >Given By: {{this.userName}}</p></td></tr>
+              {{/each}}
+              </table>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal" onclick="cancel()" >CANCEL</button>
+              <button type="button" class="btn btn-default" data-dismiss="modal" onclick="Clear()" style="background-color: skyblue;">CLEAR</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      
     </div>
   </div>
+  
+
   <table class="table table-hover">
     <h1>WELCOME</h1>  
     <h2>EVENT BOOKING SYSTEM</h2>
