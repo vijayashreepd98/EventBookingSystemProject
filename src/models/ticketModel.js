@@ -1,4 +1,4 @@
-let mongoose = require('mongoose');
+let mongoose = require('../../base/mongoose');
 
 let ticketSoldModel = mongoose.model('soldTicket', {
   userName: {
@@ -34,6 +34,10 @@ let ticketSoldModel = mongoose.model('soldTicket', {
   description:{
     type:String,
     required:true
+  },
+  status:{
+    type:Number,
+    default:0
   }
 });
 

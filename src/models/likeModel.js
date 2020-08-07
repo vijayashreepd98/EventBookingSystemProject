@@ -1,4 +1,4 @@
-let mongoose = require('mongoose');
+let mongoose = require('../../base/mongoose');
 
 let eventActivityModel = mongoose.model('eventStatuses', {
   eventName: {
@@ -10,7 +10,7 @@ let eventActivityModel = mongoose.model('eventStatuses', {
     type:String,
     required:true
   },
-   status: {
+  status: {
     type:Boolean,
     default:false
   }

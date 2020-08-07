@@ -1,4 +1,4 @@
-let mongoose = require('mongoose');
+let mongoose = require('../../base/mongoose');
 
 let customerModel = mongoose.model('customers', {
   name: {
