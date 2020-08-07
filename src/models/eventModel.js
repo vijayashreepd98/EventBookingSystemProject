@@ -1,5 +1,4 @@
-let mongoose = require('mongoose');
-let timestamp = require('mongoose-timestamp');
+let mongoose = require('../../base/mongoose');
 
 let addEventModel = mongoose.model('addEvents', {
   eventName: {
@@ -38,8 +37,6 @@ let addEventModel = mongoose.model('addEvents', {
     data: Buffer, 
     contentType: String 
     
-    
-   
   },
   totalTicket:{
     type:Number,
