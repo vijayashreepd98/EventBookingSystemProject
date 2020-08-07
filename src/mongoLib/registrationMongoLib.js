@@ -10,7 +10,7 @@ exports.createNewUser =(name,password) =>{
     return new customerModel({
         name: name,
         password: password
-      });
+    });
 }
 
 

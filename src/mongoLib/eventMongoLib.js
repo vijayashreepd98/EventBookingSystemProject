@@ -1,6 +1,7 @@
 const eventList = require('../models/eventModel.js');
 
-exports.addNewEvent = (eventName,eventDetails,numberOfPeople,bookingStartTime,bookingEndTime,cost,image,totalTicket) =>{
+exports.addNewEvent = (eventName,eventDetails,numberOfPeople,bookingStartTime,
+  bookingEndTime,cost,image,totalTicket) =>{
     return new eventList({
         eventName: eventName,
         description: eventDetails,
@@ -35,7 +36,7 @@ exports.getActiveEvents= (day)=> {
       likes: 1,
       image: 1,
       _id: 1
-    });
+    }).sort({bookingStartTime:1});
    
 }
 
@@ -53,7 +54,7 @@ exports.getUpcomingEvents= (day)=> {
       likes: 1,
       image: 1,
       _id: 1
-    });
+    }).sort({bookingStartTime:1});
    
 }
 
@@ -73,7 +74,8 @@ exports.getAllEvents= ()=> {
       likes: 1,
       image: 1,
       _id: 1
-    });
+    
+    }).sort({bookingStartTime:1});
    
 }
 

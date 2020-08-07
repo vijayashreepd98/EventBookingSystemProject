@@ -1,7 +1,6 @@
 const commentList = require('../models/addComment.js');
 
 
-
 exports.getComments = (eventName,eventId)=> {
     return commentList.find({ eventName: eventName,
         eventId:eventId

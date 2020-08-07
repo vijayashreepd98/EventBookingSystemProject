@@ -1,5 +1,4 @@
 const express = require('express');
-const session = require('express-session');
 const dateFormat = require('dateformat');
 
 const hbs = require('hbs');
@@ -21,11 +20,6 @@ const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
 
 
 
-require('../db/mongoose');
-app.use(session({secret: 'vijaya',saveUninitialized: true,resave: true,
-user:{
-  name:""
-}}));
 
 app.set('view engine', 'hbs');
 app.use(express.static("public"));
@@ -77,12 +71,14 @@ exports.login = function(req,res){
 
 /*VIEW ADMIN HOME PAGE CONTAINS LIST OF EVENTS*/
 exports.adminHome = async function(req,res)  {
-
+    let feedbacks = await feedbackMongoLib.getFeedback();
+     
   /*ACCESSING ALL STORED EVENTS TO DISPLAY*/
     let events = await eventMongoLib.getAllEvents();
     if (events) {
       res.render('eventView.hbs',{
-      events: events
+      events: events,
+      feedbacks: feedbacks
       });
     } 
       
@@ -206,6 +202,18 @@ exports.adminHome = async function(req,res)  {
     });
   }
 
+
+  /* CLEARING FEEDBACK */
+
+  exports.clearFeedback = async function(req,res) {
+    let feedbacks = await feedbackMongoLib.deleteFeedback();
+   
+    if(feedbacks) {
+      res.send("You cleared the feedback suceessfully..");
+    } else {
+      res.send ("Failed to clear!!!..");
+    }
+  }
 
 
 

@@ -2,8 +2,6 @@ const express = require('express');
 const hbs = require('hbs');
 const app = express();
 const moment = require('moment');
-const session = require('express-session');
-
 
 
 const customerModel = require('../models/registerModel.js');
@@ -23,14 +21,6 @@ const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
 
 app.set('view engine', 'hbs');
 
-app.use(session({
-  cookieName:'session',
-  secret:"vijaya",
-  saveUninitialized:true,
-  resave:true
-  
-}));
-
 hbs.registerHelper('dateTime',function(datetime){
   return moment(new Date(datetime)).format('DD-MM-YYYY @  hh:mm A').min;
 });
@@ -48,8 +38,17 @@ hbs.registerHelper('if_Equal', function(value1,value2,option){
 
 });
 
-hbs.registerHelper('if_Greater', function(value1,value2,option){
-  if(value1 >= value2){
+hbs.registerHelper('if_Greater1', function(value1,value2,value3,option){
+  if(value1 >= value2 && value1<=value3){
+    return option.fn(this);
+  }else{
+    option.inverse(this);
+  }
+
+});
+
+hbs.registerHelper('if_Greater2', function(value1,value3,option){
+  if(value1>value3){
     return option.fn(this);
   }else{
     option.inverse(this);
@@ -335,10 +334,10 @@ exports.clearHistory = async(req,res)=> {
 
 
 exports.feedback =(req, res) =>{
-  let feedbackList = feedbackMongoLib.newFeedback(req.body.feedback);
+  let feedbackList = feedbackMongoLib.newFeedback(req.body.feedback,req.body.username);
   
   feedbackList.save().then(() =>{
-    return res.send("Thank you for your feedback!!!..");
+    return res.send("Thank you .Your response has been recorded!!!..");
   }).catch(()=>{
     res.send("Sorry.. something went wrong....!!");
   });

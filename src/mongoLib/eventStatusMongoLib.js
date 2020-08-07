@@ -11,7 +11,7 @@ exports.createNewStatus = (eventName,userName,status) =>{
 
 
 exports.gettingEventStatus =(eventName,userName) =>{
-   return eventStatus.findOne( {eventName: eventName,userName: userName 
+    return eventStatus.findOne( {eventName: eventName,userName: userName 
     });
 }
 

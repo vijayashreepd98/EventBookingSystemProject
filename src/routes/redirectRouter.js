@@ -7,13 +7,10 @@ const eventList = require('../models/eventModel.js');
 const commentList = require('../models/addComment.js');
 const eventStatus = require('../models/likeModel.js');
 const bookedTickets = require('../models/ticketModel.js');
-const customerMongoLib = require('../mongoLib/registrationMongoLib.js');
 const eventMongoLib = require('../mongoLib/eventMongoLib.js');
 const eventStatusMongoLib = require('../mongoLib/eventStatusMongoLib.js');
 const commentMongoLib = require('../mongoLib/commentMongoLib.js');
-const soldTicketMongoLib = require('../mongoLib/soldTicketMongoLib.js');
-const feedbackMongoLib = require('../mongoLib/feedbackMongoLib.js');
-require('../db/mongoose');
+
 
 
 app.set('view engine', 'hbs');
